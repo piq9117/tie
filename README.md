@@ -72,6 +72,21 @@ $ git ls-files | grep -v 'example/' | grep \.hs | xargs ./ormolu --mode=inplace
 
 to format the Haskell files accordingly using Ormolu.
 
+### Building with nix
+tie is set as default package. So you can build it with
+``` sh
+$ nix build
+```
+
+To run, use the following command
+``` sh
+$ nix run -- <command>
+```
+For example, to generate the example api spec. You can run
+``` sh
+$ nix run .#default -- --output generated --module-name Petstore.API --package-name petstore-api ./example/petstore.yaml
+```
+ 
 ## Community & Contact
 
 Feel free to join on us on our
