@@ -38,7 +38,7 @@
         {
           default = pkgs.tie;
           tie-example = pkgs.tie-example;
-          dockerized-tie-example = pkgs.dockerTools.buildImage {
+          dockerize-tie-example = pkgs.dockerTools.buildImage {
             name = "tie-example";
             config = {
               Config = [ "${pkgs.tie-example}/bin/tie-example" ];
