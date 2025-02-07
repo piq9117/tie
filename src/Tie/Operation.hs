@@ -325,7 +325,8 @@ requestBodyToRequestBody resolver Errors {..} requestBody = do
     whenNothing
       ( asum
           [ InsOrd.lookup "application/json" (OpenApi._requestBodyContent requestBody),
-            InsOrd.lookup "application/x-ndjson" (OpenApi._requestBodyContent requestBody)
+            InsOrd.lookup "application/x-ndjson" (OpenApi._requestBodyContent requestBody),
+            InsOrd.lookup "application/x-tar" (OpenApi._requestBodyContent requestBody)
           ]
       )
       (traceShow requestBody $ unsupportedMediaType)
