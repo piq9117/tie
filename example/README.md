@@ -11,6 +11,21 @@ $ cabal run
 
 This will build and launch a webserver on port 8080.
 
+### Running the example with Nix
+Run the example with the following command
+``` sh
+$ nix run .#tie-example
+```
+Try curling the running example. First create the entries
+``` sh
+curl -v -X POST http://localhost:8080/pets
+```
+
+Then retrieve a list of pets with
+``` sh
+curl -v http://localhost:8080/pets
+```
+
 # Re-generate the api code
 
 Run the following command from the `example/` directory of the Tie repository:
