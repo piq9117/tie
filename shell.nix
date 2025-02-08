@@ -1,6 +1,6 @@
-{ pkgs ? import <nixpkgs> {}}:
+{ pkgs ? import <nixpkgs> { } }:
 let
-  project = pkgs.haskellPackages.callPackage ./default.nix {};
+  project = pkgs.haskellPackages.callPackage ./default.nix { };
 in
 pkgs.mkShell {
   name = project.pname;

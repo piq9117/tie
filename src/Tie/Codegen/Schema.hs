@@ -1,6 +1,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Tie.Codegen.Schema
   ( codegenSchema,
@@ -10,6 +11,7 @@ module Tie.Codegen.Schema
   )
 where
 
+import qualified Data.Text 
 import qualified Data.HashMap.Strict as HashMap
 import qualified Data.HashSet as HashSet
 import Data.List (lookup)
@@ -53,15 +55,15 @@ import Prelude hiding (Type)
 
 -- | Generate code for a parameter type.
 codegenParamSchema :: (Monad m) => Param -> m (Doc ann)
-codegenParamSchema Param {schema, required} =
+codegenParamSchema Param {name, schema, required} =
   fmap (codegenRequiredOptionalFieldType required) $
     case schema of
       Named {} ->
         -- We are named, just defer to codegenFieldType
         pure (codegenFieldType schema)
       Unnamed typ
-        | Just _enumeration <- isEnumType typ ->
-            error "TODO enumeration params"
+        | Just Enumeration {alternatives} <- isEnumType typ ->
+            pure (codegenEnumeration name (fmap removeSymbols alternatives) True)
         | Just basicType <- isBasicType typ ->
             pure (codegenFieldType (Unnamed typ))
         | Just elemType <- isArrayType typ ->
@@ -72,17 +74,22 @@ codegenParamSchema Param {schema, required} =
         | otherwise ->
             error "Impossible"
 
+removeSymbols :: Text -> Text
+removeSymbols input = Data.Text.takeWhile (\i -> Data.Text.elem i symbols) input
+  where
+    symbols = "./"
+
 -- | Generate code for a header
 codegenHeaderSchema :: Header -> Doc ann
-codegenHeaderSchema Header {schema, required} =
+codegenHeaderSchema Header {name, schema, required} =
   codegenRequiredOptionalFieldType required $
     case schema of
       Just schema@Named {} ->
         -- We are named, just defer to codegenFieldType
         codegenFieldType schema
       Just (Unnamed typ)
-        | Just _enumeration <- isEnumType typ ->
-            error "TODO enumeration params"
+        | Just Enumeration {alternatives} <- isEnumType typ ->
+            codegenEnumeration name alternatives True
         | Just basicType <- isBasicType typ ->
             codegenFieldType (Unnamed typ)
         | Just objectType <- isObjectType typ ->
