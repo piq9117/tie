@@ -1,6 +1,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Tie.Name
   ( PackageName,
@@ -154,7 +155,11 @@ toFunctionName =
 
 toFieldName :: Name -> PP.Doc ann
 toFieldName =
-  PP.pretty . Text.pack . escapeKeyword . lowerFirstLetter . toCamelCase . Text.unpack . unName
+  PP.pretty . Text.pack . escapeKeyword . lowerFirstLetter . removeSymbols . toCamelCase .  Text.unpack . unName
+  where
+    removeSymbols :: String -> String
+    removeSymbols name = filter (\n -> not $ elem @[] @_ n symbols) name
+    symbols = "."
 
 -- | Returns the name as written, should be used within quotes only.
 toParamName :: Name -> PP.Doc ann
@@ -292,7 +297,7 @@ toCamelCase input =
     . (<> suffix)
     . concat
     . map (capitalizeFirstLetter . Text.unpack)
-    . Text.split (\c -> c == '_' || c == '-')
+    . Text.split (\c -> c == '_' || c == '-' || c == '.')
     . Text.pack
     $ input
   where

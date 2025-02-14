@@ -726,6 +726,7 @@ data Pet = Pet
     {
         id :: GHC.Int.Int64,
         name :: Data.Text.Text,
+        nickName :: (Data.Maybe.Maybe (Data.Text.Text)),
         tag :: (Data.Maybe.Maybe (Data.Text.Text))
     }
     deriving (Show)
@@ -735,11 +736,13 @@ instance Data.Aeson.ToJSON Pet where
         ([ "id" Data.Aeson..= id,
            "name" Data.Aeson..= name
         ]
+        ++ [ "nick.name" Data.Aeson..= nickName | Just nickName <- [nickName] ]
         ++ [ "tag" Data.Aeson..= tag | Just tag <- [tag] ])
 
     toEncoding Pet {..} = Data.Aeson.Encoding.pairs
         ( Data.Aeson.Encoding.pair "id" (Data.Aeson.toEncoding id) <>
           Data.Aeson.Encoding.pair "name" (Data.Aeson.toEncoding name) <>
+          maybe mempty (Data.Aeson.Encoding.pair "nick.name" . Data.Aeson.toEncoding) nickName <>
           maybe mempty (Data.Aeson.Encoding.pair "tag" . Data.Aeson.toEncoding) tag
         )
 
@@ -748,6 +751,7 @@ instance Data.Aeson.FromJSON Pet where
         Pet
             <$> o Data.Aeson..: "id"
             <*> o Data.Aeson..: "name"
+            <*> o Data.Aeson..:? "nick.name"
             <*> o Data.Aeson..:? "tag"
 ---------------------
 Test/Schemas/Pets.hs

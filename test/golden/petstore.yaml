@@ -94,6 +94,8 @@ components:
           type: string
         tag:
           type: string
+        nick.name:
+          type: string
     Pets:
       type: array
       items:
