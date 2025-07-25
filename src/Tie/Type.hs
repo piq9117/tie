@@ -390,6 +390,8 @@ schemaToStringyType schema
           Just FormatDate
         Just "date-time" ->
           Just FormatDateTime
+        Just "byte" ->
+          Just FormatByte
         Just unknown ->
           Just (FormatUnknown unknown)
 

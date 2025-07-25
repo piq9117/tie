@@ -75,6 +75,7 @@ type StatusCode = Int
 data RequestBody = RequestBody
   { description :: Maybe Text,
     jsonRequestBodyContent :: Named Type,
+    formDataRequestBodyContent :: Named Type,
     provideRequestBodyAsStream :: Bool
   }
 
@@ -325,7 +326,8 @@ requestBodyToRequestBody resolver Errors {..} requestBody = do
     whenNothing
       ( asum
           [ InsOrd.lookup "application/json" (OpenApi._requestBodyContent requestBody),
-            InsOrd.lookup "application/x-ndjson" (OpenApi._requestBodyContent requestBody)
+            InsOrd.lookup "application/x-ndjson" (OpenApi._requestBodyContent requestBody),
+            InsOrd.lookup "multipart/form-data" (OpenApi._requestBodyContent requestBody)
           ]
       )
       (traceShow requestBody $ unsupportedMediaType)
@@ -339,6 +341,7 @@ requestBodyToRequestBody resolver Errors {..} requestBody = do
     RequestBody
       { description = OpenApi._requestBodyDescription requestBody,
         jsonRequestBodyContent = type_,
+        formDataRequestBodyContent = type_,
         provideRequestBodyAsStream
       }
 

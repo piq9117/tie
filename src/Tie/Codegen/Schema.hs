@@ -579,6 +579,8 @@ codegenFieldType namedType = case namedType of
           "Data.Time.Day"
         Just FormatDateTime ->
           "Data.Time.UTCTime"
+        Just FormatByte ->
+          "Data.ByteString.ByteString"
         Just _otherFormat ->
           -- TODO consider other formats
           "Data.Text.Text"

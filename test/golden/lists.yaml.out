@@ -411,6 +411,9 @@ formBodyParser :: (FromForm a) => BodyParser a
 formBodyParser = BodyParser "application/xxx-form-urlencoded" parseRequestBodyForm
 {-# INLINE formBodyParser #-}
 
+formDataBodyParser :: (FromForm a) => BodyParser a
+formDataBodyParser = BodyParser "multipart/form-data" parseRequestBodyForm
+
 parseRequestBody :: [BodyParser a] -> (a -> Wai.Application) -> Wai.Application
 parseRequestBody parsers withBody = \request respond -> do
   let contentType =

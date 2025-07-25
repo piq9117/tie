@@ -9,6 +9,22 @@ info:
 servers:
   - url: https://swagger.io/specification/
 paths:
+  /users/upload:
+    post:
+      operationId: uploadUsers
+      summary: Upload Users
+      requestBody:
+        description: Upload User from file
+        x-tie-haskell-request-body-as-stream: true
+        content:
+          multipart/form-data:
+            schema:
+              type: string
+              format: byte
+      responses:
+        "204":
+          description: Users Uploaded
+
   /users/{id}/create/{name}:
     parameters:
       - in: path
