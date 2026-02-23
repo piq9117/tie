@@ -316,9 +316,9 @@ requestBodyToRequestBody resolver Errors {..} requestBody = do
       provideRequestBodyAsStream
         | Just extensionValue <- InsOrd.lookup "tie-haskell-request-body-as-stream" extensions,
           Just flag <- Aeson.parseMaybe Aeson.parseJSON extensionValue =
-            flag
+          flag
         | otherwise =
-            False
+          False
 
   -- TODO support form inputs as well
   OpenApi.MediaTypeObject {..} <-
@@ -381,9 +381,9 @@ parsePath path =
   let toPathSegment s
         | Just s <- Text.stripPrefix "{" s,
           Just s <- Text.stripSuffix "}" s =
-            VariableSegment s
+          VariableSegment s
         | otherwise =
-            StaticSegment s
+          StaticSegment s
    in case Text.splitOn "/" (toText path) of
         -- leading / results in a leading empty string after split
         "" : segments ->
@@ -421,7 +421,7 @@ paramToParam resolver Errors {..} OpenApi.Param {..} = do
           _
             -- Apply the default style for query paramters
             | OpenApi.ParamQuery <- _paramIn ->
-                Just StyleForm
+              Just StyleForm
             | otherwise -> Nothing,
         schema = typ
       }

@@ -56,15 +56,15 @@ codegenResponses resolver responseModuleName Operation {..} = do
   let responseBodyType Response {responseContent}
         -- We treat JSON responses specially
         | Just jsonContent <- lookup "application/json" responseContent =
-            [maybe "Data.Aeson.Value" codegenFieldType jsonContent]
+          [maybe "Data.Aeson.Value" codegenFieldType jsonContent]
         | Just jsonLdContent <- lookup "application/x-ndjson" responseContent =
-            ["(" <> PP.pretty responseModuleName <> "." <> "NDJSON" <+> maybe "Data.Aeson.Value" codegenFieldType jsonLdContent <> ")"]
+          ["(" <> PP.pretty responseModuleName <> "." <> "NDJSON" <+> maybe "Data.Aeson.Value" codegenFieldType jsonLdContent <> ")"]
         -- Everything else we use a Network.Wai.StreamingBody type
         | not (null responseContent) =
-            ["Network.Wai.StreamingBody"]
+          ["Network.Wai.StreamingBody"]
         -- Otherwise, no response body present
         | otherwise =
-            []
+          []
 
       responseHeaderTypes Response {headers} =
         map codegenHeaderSchema headers
@@ -73,13 +73,13 @@ codegenResponses resolver responseModuleName Operation {..} = do
       -- we have to generate Show instances for those types!
       canDeriveStockShowInstanceForResponse Response {responseContent}
         | Just _ <- lookup "application/json" responseContent =
-            True
+          True
         | Just _ <- lookup "application/x-ndjson" responseContent =
-            False
+          False
         | not (null responseContent) =
-            False
+          False
         | otherwise =
-            True
+          True
 
       requiresCustomShowInstance =
         not $
@@ -201,38 +201,38 @@ codegenToResponses responseModuleName operationName responses defaultResponse =
 
       waiResponse Response {responseContent}
         | Just _ <- lookup "application/json" responseContent =
-            -- JSON is very easy to turn into Builders!
-            "Network.Wai.responseBuilder"
+          -- JSON is very easy to turn into Builders!
+          "Network.Wai.responseBuilder"
         | Just _ <- lookup "application/x-ndjson" responseContent =
-            PP.pretty responseModuleName <> "." <> "responseNDJSON"
+          PP.pretty responseModuleName <> "." <> "responseNDJSON"
         | not (null responseContent) =
-            -- Tie doesn't know about the content type of this response,
-            -- uses a Stream instaed
-            "Network.Wai.responseStream"
+          -- Tie doesn't know about the content type of this response,
+          -- uses a Stream instaed
+          "Network.Wai.responseStream"
         | otherwise =
-            -- For empty response bodies we pass mempty
-            "Network.Wai.responseBuilder"
+          -- For empty response bodies we pass mempty
+          "Network.Wai.responseBuilder"
 
       bodySerialize Response {responseContent}
         | Just _ <- lookup "application/json" responseContent =
-            "(" <> "Data.Aeson.fromEncoding" <+> "(" <> "Data.Aeson.toEncoding" <+> "x" <> ")" <> ")"
+          "(" <> "Data.Aeson.fromEncoding" <+> "(" <> "Data.Aeson.toEncoding" <+> "x" <> ")" <> ")"
         | Just _ <- lookup "application/x-ndjson" responseContent =
-            "x"
+          "x"
         | not (null responseContent) =
-            "x"
+          "x"
         | otherwise =
-            "mempty"
+          "mempty"
 
       responseHeaders response@Response {responseContent, headers} =
         let contentType
               | Just _ <- lookup "application/json" responseContent =
-                  ["(Network.HTTP.Types.hContentType, \"application/json\")"]
+                ["(Network.HTTP.Types.hContentType, \"application/json\")"]
               | Just _ <- lookup "application/x-ndjson" responseContent =
-                  ["(Network.HTTP.Types.hContentType, \"application/x-ndjson\")"]
+                ["(Network.HTTP.Types.hContentType, \"application/x-ndjson\")"]
               | (unknownMediaType, _) : _ <- responseContent =
-                  ["(Network.HTTP.Types.hContentType, \"" <> PP.pretty @Text (decodeUtf8 (renderHeader unknownMediaType)) <> "\")"]
+                ["(Network.HTTP.Types.hContentType, \"" <> PP.pretty @Text (decodeUtf8 (renderHeader unknownMediaType)) <> "\")"]
               | otherwise =
-                  []
+                []
 
             requiredHeaders =
               [ "(\"" <> toParamName name <> "\"," <+> "Web.HttpApiData.toHeader" <+> toParamBinder name <> ")"

@@ -103,10 +103,10 @@ data BasicType
   | TyInteger (Maybe IntegerFormat)
   | TyBoolean
   | TyHaskellType
-      -- | Haskell modules to import
       [Text]
-      -- | Type to insert
+      -- ^ Haskell modules to import
       Text
+      -- ^ Type to insert
   deriving (Eq, Ord, Show)
 
 data FreeFormObject ty
@@ -183,9 +183,9 @@ isBasicType typ = case typ of
 isEnumType :: Type -> Maybe Enumeration
 isEnumType typ
   | Just (TyEnum enum) <- isBasicType typ =
-      Just enum
+    Just enum
   | otherwise =
-      Nothing
+    Nothing
 
 schemaRefToType ::
   (Monad m) =>
@@ -234,89 +234,89 @@ resolveMapping resolver referenceOrschemaName = do
 schemaToType :: (Monad m) => Resolver m -> OpenApi.Schema -> m Type
 schemaToType resolver schema
   | Just allOfsRefs <- OpenApi._schemaAllOf schema = do
-      AllOf <$> traverse (schemaRefToType resolver) allOfsRefs
+    AllOf <$> traverse (schemaRefToType resolver) allOfsRefs
   | Just oneOfsRefs <- OpenApi._schemaOneOf schema = do
-      discriminator <- case OpenApi._schemaDiscriminator schema of
-        Nothing ->
-          pure Nothing
-        Just OpenApi.Discriminator {_discriminatorPropertyName, _discriminatorMapping} -> do
-          mapping <-
-            traverse
-              (resolveMapping resolver)
-              _discriminatorMapping
-          pure $
-            Just
-              Discriminator
-                { mapping =
-                    [ (fromText name, value)
-                      | (value, name) <- InsOrd.toList mapping
-                    ],
-                  propertyName = _discriminatorPropertyName
-                }
-      OneOf discriminator <$> traverse (schemaRefToType resolver) oneOfsRefs
+    discriminator <- case OpenApi._schemaDiscriminator schema of
+      Nothing ->
+        pure Nothing
+      Just OpenApi.Discriminator {_discriminatorPropertyName, _discriminatorMapping} -> do
+        mapping <-
+          traverse
+            (resolveMapping resolver)
+            _discriminatorMapping
+        pure $
+          Just
+            Discriminator
+              { mapping =
+                  [ (fromText name, value)
+                    | (value, name) <- InsOrd.toList mapping
+                  ],
+                propertyName = _discriminatorPropertyName
+              }
+    OneOf discriminator <$> traverse (schemaRefToType resolver) oneOfsRefs
   | Just anyOfRefs <- OpenApi._schemaAnyOf schema =
-      AnyOf <$> traverse (schemaRefToType resolver) anyOfRefs
+    AnyOf <$> traverse (schemaRefToType resolver) anyOfRefs
   | Just notOfRef <- OpenApi._schemaNot schema =
-      Not <$> schemaRefToType resolver notOfRef
+    Not <$> schemaRefToType resolver notOfRef
   | Just schemaType <- OpenApi._schemaType schema =
-      case schemaType of
-        _
-          | Just haskellType <- schemaToExtHaskellType schema ->
-              pure (Basic haskellType)
-        OpenApi.OpenApiString ->
-          pure (Basic (schemaToStringyType schema))
-        OpenApi.OpenApiNumber ->
-          pure (Basic (schemaToNumberType schema))
-        OpenApi.OpenApiInteger ->
-          pure (Basic (schemaToIntegerType schema))
-        OpenApi.OpenApiBoolean ->
-          pure (Basic TyBoolean)
-        OpenApi.OpenApiArray
-          | Just items <- OpenApi._schemaItems schema ->
-              case items of
-                OpenApi.OpenApiItemsObject itemsSchemaRef ->
-                  Array <$> schemaRefToType resolver itemsSchemaRef
-                OpenApi.OpenApiItemsArray _itemsSchemaRefs ->
-                  error "unimplemented" -- TODO find out what tuple schemas are
-          | otherwise ->
-              pure $
-                Array
-                  ( Unnamed
-                      ( Object
-                          ( ObjectType
-                              { properties = mempty,
-                                requiredProperties = mempty,
-                                additionalProperties = Just FreeForm,
-                                haskellFieldNames = mempty
-                              }
-                          )
+    case schemaType of
+      _
+        | Just haskellType <- schemaToExtHaskellType schema ->
+          pure (Basic haskellType)
+      OpenApi.OpenApiString ->
+        pure (Basic (schemaToStringyType schema))
+      OpenApi.OpenApiNumber ->
+        pure (Basic (schemaToNumberType schema))
+      OpenApi.OpenApiInteger ->
+        pure (Basic (schemaToIntegerType schema))
+      OpenApi.OpenApiBoolean ->
+        pure (Basic TyBoolean)
+      OpenApi.OpenApiArray
+        | Just items <- OpenApi._schemaItems schema ->
+          case items of
+            OpenApi.OpenApiItemsObject itemsSchemaRef ->
+              Array <$> schemaRefToType resolver itemsSchemaRef
+            OpenApi.OpenApiItemsArray _itemsSchemaRefs ->
+              error "unimplemented" -- TODO find out what tuple schemas are
+        | otherwise ->
+          pure $
+            Array
+              ( Unnamed
+                  ( Object
+                      ( ObjectType
+                          { properties = mempty,
+                            requiredProperties = mempty,
+                            additionalProperties = Just FreeForm,
+                            haskellFieldNames = mempty
+                          }
                       )
                   )
-        OpenApi.OpenApiNull ->
-          error "unimplemented" -- TODO need a BasicType for OpenApiNull
-        OpenApi.OpenApiObject ->
-          Object <$> schemaToObjectType resolver schema
+              )
+      OpenApi.OpenApiNull ->
+        error "unimplemented" -- TODO need a BasicType for OpenApiNull
+      OpenApi.OpenApiObject ->
+        Object <$> schemaToObjectType resolver schema
   -- Heuristic: if the 'OpenApi.Schema' has properties attached
   -- treat it as object.
   | not (InsOrd.null (OpenApi._schemaProperties schema)) =
-      Object <$> schemaToObjectType resolver schema
+    Object <$> schemaToObjectType resolver schema
   -- It's an enum but without explicit "type: string"
   | Just _enum <- OpenApi._schemaEnum schema =
-      pure (Basic (schemaToStringyType schema))
+    pure (Basic (schemaToStringyType schema))
   | otherwise =
-      -- Fallback to a free form object type in case nothing else
-      -- matches
-      -- TODO: maybe warn about missing explicit type
-      pure
-        ( Object
-            ( ObjectType
-                { properties = mempty,
-                  requiredProperties = mempty,
-                  additionalProperties = Just FreeForm,
-                  haskellFieldNames = mempty
-                }
-            )
-        )
+    -- Fallback to a free form object type in case nothing else
+    -- matches
+    -- TODO: maybe warn about missing explicit type
+    pure
+      ( Object
+          ( ObjectType
+              { properties = mempty,
+                requiredProperties = mempty,
+                additionalProperties = Just FreeForm,
+                haskellFieldNames = mempty
+              }
+          )
+      )
 
 -- | Resolves an 'OpenApi.Schema' to an 'ObjectType'. In case the the 'OpenApi.Schema' is an
 -- allOf-schema. This function doesn't do any additional type checking.
@@ -342,7 +342,7 @@ schemaToObjectType resolver schema = do
               case InsOrd.lookup "tie-haskell-name" (OpenApi._unDefs extensions) of
                 Just extensionValue
                   | Just haskellFieldName <- Aeson.parseMaybe Aeson.parseJSON extensionValue ->
-                      fromText haskellFieldName
+                    fromText haskellFieldName
                 _ ->
                   -- If there is no name override specified or the override doesn't parse
                   -- as string, we use the property name itself.
@@ -377,32 +377,32 @@ schemaToObjectType resolver schema = do
 schemaToStringyType :: OpenApi.Schema -> BasicType
 schemaToStringyType schema
   | Just enum <- OpenApi._schemaEnum schema = do
-      TyEnum $
-        Enumeration
-          { alternatives = [alt | Aeson.String alt <- enum],
-            includeNull = Aeson.Null `elem` enum
-          }
+    TyEnum $
+      Enumeration
+        { alternatives = [alt | Aeson.String alt <- enum],
+          includeNull = Aeson.Null `elem` enum
+        }
   | otherwise =
-      TyString $ case OpenApi._schemaFormat schema of
-        Nothing ->
-          Nothing
-        Just "date" ->
-          Just FormatDate
-        Just "date-time" ->
-          Just FormatDateTime
-        Just unknown ->
-          Just (FormatUnknown unknown)
+    TyString $ case OpenApi._schemaFormat schema of
+      Nothing ->
+        Nothing
+      Just "date" ->
+        Just FormatDate
+      Just "date-time" ->
+        Just FormatDateTime
+      Just unknown ->
+        Just (FormatUnknown unknown)
 
 schemaToExtHaskellType :: OpenApi.Schema -> Maybe BasicType
 schemaToExtHaskellType schema
   | let extensions = OpenApi._unDefs (OpenApi._schemaExtensions schema),
     Just extensionValue <- InsOrd.lookup "tie-haskell-type" extensions,
     Just haskellType <- Aeson.parseMaybe Aeson.parseJSON extensionValue =
-      let haskellModules =
-            extractHaskellModule haskellType
-       in pure (TyHaskellType haskellModules haskellType)
+    let haskellModules =
+          extractHaskellModule haskellType
+     in pure (TyHaskellType haskellModules haskellType)
   | otherwise =
-      Nothing
+    Nothing
 
 schemaToNumberType :: OpenApi.Schema -> BasicType
 schemaToNumberType schema =
@@ -597,21 +597,21 @@ normalizeNamedType assignName namedType = case namedType of
     pure (namedType, [])
   Unnamed typ
     | Just enum <- isEnumType typ -> do
-        newTypeName <- assignName
-        pure
-          (Named newTypeName (Basic (TyEnum enum)), [(newTypeName, Basic (TyEnum enum))])
+      newTypeName <- assignName
+      pure
+        (Named newTypeName (Basic (TyEnum enum)), [(newTypeName, Basic (TyEnum enum))])
     | Just (discriminator, variants) <- isOneOfType typ -> do
-        newTypeName <- assignName
-        pure (Named newTypeName (OneOf discriminator variants), [(newTypeName, OneOf discriminator variants)])
+      newTypeName <- assignName
+      pure (Named newTypeName (OneOf discriminator variants), [(newTypeName, OneOf discriminator variants)])
     | Just objectType <- isObjectType typ -> do
-        newTypeName <- assignName
-        pure (Named newTypeName (Object objectType), [(newTypeName, Object objectType)])
+      newTypeName <- assignName
+      pure (Named newTypeName (Object objectType), [(newTypeName, Object objectType)])
     | Just (Unnamed elemType) <- isArrayType typ -> do
-        (normedElemType, inlineDefinitions) <-
-          normalizeNamedType assignName (Unnamed elemType)
-        pure (Unnamed (Array normedElemType), inlineDefinitions)
+      (normedElemType, inlineDefinitions) <-
+        normalizeNamedType assignName (Unnamed elemType)
+      pure (Unnamed (Array normedElemType), inlineDefinitions)
     | otherwise ->
-        pure (namedType, [])
+      pure (namedType, [])
 
 normalizeObjectType ::
   (Monad m) =>
@@ -687,24 +687,24 @@ normalizeTypeShallow
   typeName
   typ
     | Just (discriminator, variants) <- isOneOfType typ = do
-        (variants, inlineDefinitions) <-
-          normalizeVariants (assignOneOfTypeName typeName) variants
-        pure (OneOf discriminator variants, inlineDefinitions)
+      (variants, inlineDefinitions) <-
+        normalizeVariants (assignOneOfTypeName typeName) variants
+      pure (OneOf discriminator variants, inlineDefinitions)
     | Just objectType <- isObjectType typ = do
-        (objectType, inlineDefinitions) <-
-          normalizeObjectType
-            (assignObjectFieldTypeName typeName)
-            (assignAdditionalPropertiesTypeName typeName)
-            objectType
-        pure (Object objectType, inlineDefinitions)
+      (objectType, inlineDefinitions) <-
+        normalizeObjectType
+          (assignObjectFieldTypeName typeName)
+          (assignAdditionalPropertiesTypeName typeName)
+          objectType
+      pure (Object objectType, inlineDefinitions)
     | Just elemType <- isArrayType typ = do
-        (normedElemType, inlineDefinitions) <-
-          normalizeNamedType (assignArrayElemTypeName typeName) elemType
-        pure (Array normedElemType, inlineDefinitions)
+      (normedElemType, inlineDefinitions) <-
+        normalizeNamedType (assignArrayElemTypeName typeName) elemType
+      pure (Array normedElemType, inlineDefinitions)
     -- There is no need to handle Enums here. Remember this is
     -- only called on types that already have names.
     | otherwise =
-        pure (typ, [])
+      pure (typ, [])
 
 -- Normalizes a 'Type' by assigning each anonymous, inline definition a name.
 -- Returns the normalized 'Type' alongside with the additional inline definitions.

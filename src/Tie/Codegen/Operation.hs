@@ -331,7 +331,7 @@ codegenRequestBodyGuard requestBody continuation = case requestBody of
   Just RequestBody {jsonRequestBodyContent} ->
     let parsers =
           -- TODO support forms
-          ["jsonBodyParser"]
+          ["jsonBodyParser", "jsonCharset8BodyParser"]
 
         parsersList =
           "[" <> PP.concatWith (\x y -> x <> "," <+> y) parsers <> "]"
@@ -394,87 +394,87 @@ codegenQueryParamGuard Param {name, required, style, explode, schema} continuati
   | Just _ <- isArrayType (namedType schema),
     Just style <- style,
     Just style <- codegenQueryParamStyle explode style =
-      (if required then "requiredQueryParameters" else "optionalQueryParameters")
-        <+> style
-        <+> "\""
-        <> toParamName name
-        <> "\""
-        <+> "("
-        <> "\\"
-        <> toParamBinder name
-        <+> "request"
-        <+> "respond"
-        <+> "->"
-        <> PP.line
-        <> PP.indent 4 continuation
-        <> ")"
-        <+> "request"
-        <+> "respond"
+    (if required then "requiredQueryParameters" else "optionalQueryParameters")
+      <+> style
+      <+> "\""
+      <> toParamName name
+      <> "\""
+      <+> "("
+      <> "\\"
+      <> toParamBinder name
+      <+> "request"
+      <+> "respond"
+      <+> "->"
+      <> PP.line
+      <> PP.indent 4 continuation
+      <> ")"
+      <+> "request"
+      <+> "respond"
   | required =
-      "requiredQueryParameter"
-        <+> "\""
-        <> toParamName name
-        <> "\""
-        <+> "("
-        <> "\\"
-        <> toParamBinder name
-        <+> "request"
-        <+> "respond"
-        <+> "->"
-        <> PP.line
-        <> PP.indent 4 continuation
-        <> ")"
-        <+> "request"
-        <+> "respond"
+    "requiredQueryParameter"
+      <+> "\""
+      <> toParamName name
+      <> "\""
+      <+> "("
+      <> "\\"
+      <> toParamBinder name
+      <+> "request"
+      <+> "respond"
+      <+> "->"
+      <> PP.line
+      <> PP.indent 4 continuation
+      <> ")"
+      <+> "request"
+      <+> "respond"
   | otherwise =
-      "optionalQueryParameter"
-        <+> "\""
-        <> toParamName name
-        <> "\""
-        <+> "False"
-        <+> "("
-        <> "\\"
-        <> toParamBinder name
-        <+> "request"
-        <+> "respond"
-        <+> "->"
-        <> PP.line
-        <> PP.indent 4 continuation
-        <> ")"
-        <+> "request"
-        <+> "respond"
+    "optionalQueryParameter"
+      <+> "\""
+      <> toParamName name
+      <> "\""
+      <+> "False"
+      <+> "("
+      <> "\\"
+      <> toParamBinder name
+      <+> "request"
+      <+> "respond"
+      <+> "->"
+      <> PP.line
+      <> PP.indent 4 continuation
+      <> ")"
+      <+> "request"
+      <+> "respond"
 
 codegenHeaderGuard :: Param -> PP.Doc ann -> PP.Doc ann
 codegenHeaderGuard Param {name, required} continuation
   | required =
-      "requiredHeader"
-        <+> "\""
-        <> toParamName name
-        <> "\""
-        <+> "("
-        <> "\\"
-        <> toParamBinder name
-        <+> "request"
-        <+> "respond"
-        <+> "->"
-        <> PP.line
-        <> PP.indent 4 continuation
-        <> ")"
-        <+> "request"
-        <+> "respond"
+    "requiredHeader"
+      <+> "\""
+      <> toParamName name
+      <> "\""
+      <+> "("
+      <> "\\"
+      <> toParamBinder name
+      <+> "request"
+      <+> "respond"
+      <+> "->"
+      <> PP.line
+      <> PP.indent 4 continuation
+      <> ")"
+      <+> "request"
+      <+> "respond"
   | otherwise =
-      "optionalHeader"
-        <+> "\""
-        <> toParamName name
-        <> "\""
-        <+> "("
-        <> "\\"
-        <> toParamBinder name
-        <+> "request"
-        <+> "respond"
-        <+> "->"
-        <> PP.line
-        <> PP.indent 4 continuation
-        <> ")"
-        <+> "request"
-        <+> "respond"
+    "optionalHeader"
+      <+> "\""
+      <> toParamName name
+      <> "\""
+      <+> "("
+      <> "\\"
+      <> toParamBinder name
+      <+> "request"
+      <+> "respond"
+      <+> "->"
+      <> PP.line
+      <> PP.indent 4 continuation
+      <> ")"
+      <+> "request"
+      <+> "respond"

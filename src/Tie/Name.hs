@@ -155,7 +155,7 @@ toFunctionName =
 
 toFieldName :: Name -> PP.Doc ann
 toFieldName =
-  PP.pretty . Text.pack . escapeKeyword . lowerFirstLetter . removeSymbols . toCamelCase .  Text.unpack . unName
+  PP.pretty . Text.pack . escapeKeyword . lowerFirstLetter . removeSymbols . toCamelCase . Text.unpack . unName
   where
     removeSymbols :: String -> String
     removeSymbols name = filter (\n -> not $ elem @[] @_ n symbols) name
