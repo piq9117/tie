@@ -14,6 +14,7 @@ module Tie.Template.Request_
     -- * Request body
     parseRequestBody,
     jsonBodyParser,
+    jsonCharset8BodyParser,
     formBodyParser,
   )
 where
@@ -217,9 +218,9 @@ optionalQueryParameter name allowEmpty withParam = \request respond ->
       withParam Nothing request respond
     Just Nothing
       | allowEmpty ->
-          withParam Nothing request respond
+        withParam Nothing request respond
       | otherwise ->
-          respond (Wai.responseBuilder (toEnum 400) [] ("Missing query parameter: " <> Builder.byteString name))
+        respond (Wai.responseBuilder (toEnum 400) [] ("Missing query parameter: " <> Builder.byteString name))
     Just (Just value) ->
       case parseQueryParam (Text.decodeUtf8 value) of
         Left _err ->
@@ -270,6 +271,10 @@ data BodyParser a
 jsonBodyParser :: (Data.Aeson.FromJSON a) => BodyParser a
 jsonBodyParser = BodyParser "application/json" parseRequestBodyJSON
 {-# INLINE jsonBodyParser #-}
+
+jsonCharset8BodyParser :: (Data.Aeson.FromJSON a) => BodyParser a
+jsonCharset8BodyParser = BodyParser "application/json;charset=utf-8" parseRequestBodyJSON
+{-# INLINE jsonCharset8BodyParser #-}
 
 formBodyParser :: (FromForm a) => BodyParser a
 formBodyParser = BodyParser "application/xxx-form-urlencoded" parseRequestBodyForm

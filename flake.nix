@@ -61,6 +61,7 @@
               hsPkgs.cabal-fmt
               hsPkgs.ghcid
               hsPkgs.ghc
+              ormolu
               treefmt
               nixpkgs-fmt
             ] ++ libs;
